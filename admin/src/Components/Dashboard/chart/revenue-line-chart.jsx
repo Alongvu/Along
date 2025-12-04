@@ -16,7 +16,7 @@ export default function revenueLineChart(labels = [], data = []) {
     }
     const nextLabel = `${nextYear}-${String(nextMonth).padStart(2, "0")}`;
     safeLabels.push(nextLabel);
-    safeData.push(safeData[0]);
+    safeData.push(0);
   }
 
   // If mismatch lengths, cut to min length
@@ -26,17 +26,14 @@ export default function revenueLineChart(labels = [], data = []) {
     safeData = safeData.slice(0, minLen);
   }
 
-  // Prepare series as [{ data: [{x,label}, {x,label}], label }]
-  const seriesData = safeLabels.map((lbl, idx) => ({ x: lbl, y: Number(safeData[idx] || 0) }));
-
   // If no data, return empty placeholders
-  if (seriesData.length === 0) {
+  if (safeLabels.length === 0 || safeData.length === 0) {
     return {
-      xAxis: [{ data: ["Không có dữ liệu"] }],
+      xAxis: [{ scaleType: "band", data: ["Không có dữ liệu"] }],
       series: [
         {
-          data: [{ x: "Không có dữ liệu", y: 0 }],
-          label: "Doanh thu",
+          data: [0],
+          label: "Doanh thu ($)",
         },
       ],
       height: 360,
@@ -44,11 +41,12 @@ export default function revenueLineChart(labels = [], data = []) {
   }
 
   return {
-    xAxis: [{ data: safeLabels }],
+    xAxis: [{ scaleType: "band", data: safeLabels }],
     series: [
       {
-        data: seriesData,
-        label: "Doanh thu",
+        data: safeData,
+        label: "Doanh thu ($)",
+        curve: "linear",
       },
     ],
     height: 360,

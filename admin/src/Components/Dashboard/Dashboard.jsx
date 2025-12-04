@@ -10,12 +10,13 @@ import revenueLineChart from "./chart/revenue-line-chart";
 
 import "./Dashboard.css";
 
-const categoryOrder = ["men", "women", "kid", "accessory"];
+// const categoryOrder = ["men", "women", "kid", "accessory"]; 
 const displayNames = {
   men: "Men",
   women: "Women",
   kid: "Kid",
   accessory: "Accessory",
+  "khác": "Khác", 
 };
 
 export default function Dashboard() {
@@ -61,17 +62,24 @@ export default function Dashboard() {
   const { totalOrders = 0, totalRevenue = 0, totalSoldProducts = 0 } =
     ordersSummary;
 
-  const barData = categoryOrder.map((cat) => ({
-    category: displayNames[cat] || cat,
+  const allCategories = [
+    ...new Set([
+      ...Object.keys(productsByCategory),
+      ...Object.keys(productsSoldByCategory),
+    ]),
+  ];
+
+  const barData = allCategories.map((cat) => ({
+    category: displayNames[cat] || cat.charAt(0).toUpperCase() + cat.slice(1),
     total: Number(productsByCategory[cat] || 0),
     sold: Number(productsSoldByCategory[cat] || 0),
   }));
 
-  const pieData = categoryOrder
+  const pieData = allCategories
     .filter((cat) => Number(productsSoldByCategory[cat] || 0) > 0)
     .map((cat, idx) => ({
       id: idx,
-      label: displayNames[cat] || cat,
+      label: displayNames[cat] || cat.charAt(0).toUpperCase() + cat.slice(1),
       value: Number(productsSoldByCategory[cat] || 0),
     }));
 
@@ -81,11 +89,10 @@ const lineLabels =
     ? monthlyLabels
     : Object.keys(revenueByMonth || {});
 
-// 🔹 Dữ liệu doanh thu (triệu đồng)
 const lineData = lineLabels.map((lbl) => {
   const raw = revenueByMonth?.[lbl];
   const val = parseFloat(raw);
-  return Number.isFinite(val) ? val / 1_000_000 : 0;
+  return Number.isFinite(val) ? val : 0; // ✅ Giữ nguyên giá trị $
 });
 
 // 🔹 Debug nếu cần
