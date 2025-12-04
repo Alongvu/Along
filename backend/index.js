@@ -12,6 +12,7 @@ const { log } = require("console");
 const Contact = require("./models/Contact");
 const qs = require("qs");
 const crypto = require("crypto");
+const moment = require("moment");
 
 app.use(express.json());
 app.use(cors());
@@ -724,80 +725,187 @@ app.post('/momo-notify', (req, res) => {
 });
 
 
-// Hàm SORT BẮT BUỘC của VNPay (KHÔNG sửa)
+/* ==================== VNPay Payment Gateway ==================== */
+// Hàm sortObject theo chuẩn VNPay (BẮT BUỘC - encode URL params)
 function sortObject(obj) {
-    const sorted = {};
-    const keys = Object.keys(obj).sort();
-    keys.forEach(k => sorted[k] = obj[k]);
+    let sorted = {};
+    let str = [];
+    let key;
+    for (key in obj){
+        if (obj.hasOwnProperty(key)) {
+            str.push(encodeURIComponent(key));
+        }
+    }
+    str.sort();
+    for (key = 0; key < str.length; key++) {
+        sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, "+");
+    }
     return sorted;
 }
 
-/* ------------------- VNPay ------------------- */
-// Debug helper: GET returns usage info so opening URL in browser is informative
-app.get('/create-vnpay', (req, res) => {
-  return res.json({ method: 'POST', usage: { path: '/create-vnpay', body: { amount: 'number (VND)' } } });
+// 1️⃣ API: Tạo URL thanh toán VNPay
+app.post("/create-vnpay", (req, res) => {
+    try {
+        process.env.TZ = 'Asia/Ho_Chi_Minh';
+        
+        const tmnCode = process.env.VNP_TMNCODE;
+        const secretKey = process.env.VNP_HASH_SECRET;
+        const vnpUrl = process.env.VNP_URL;
+        const returnUrl = process.env.VNP_RETURN_URL;
+
+        // Validate env
+        if (!tmnCode || !secretKey || !vnpUrl || !returnUrl) {
+            console.error('❌ VNPay configuration missing');
+            return res.status(500).json({ error: 'VNPay configuration missing on server' });
+        }
+
+        // Validate amount
+        const amount = req.body.amount;
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid amount' });
+        }
+
+        const date = new Date();
+        const createDate = moment(date).format('YYYYMMDDHHmmss');
+        const orderId = moment(date).format('DDHHmmss');
+        
+        const ipAddr = req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress ||
+            req.socket.remoteAddress ||
+            req.connection.socket.remoteAddress;
+
+        const locale = req.body.language || 'vn';
+        const currCode = 'VND';
+        const bankCode = req.body.bankCode || '';
+
+        let vnp_Params = {};
+        vnp_Params['vnp_Version'] = '2.1.0';
+        vnp_Params['vnp_Command'] = 'pay';
+        vnp_Params['vnp_TmnCode'] = tmnCode;
+        vnp_Params['vnp_Locale'] = locale;
+        vnp_Params['vnp_CurrCode'] = currCode;
+        vnp_Params['vnp_TxnRef'] = orderId;
+        vnp_Params['vnp_OrderInfo'] = 'Thanh toan cho ma GD:' + orderId;
+        vnp_Params['vnp_OrderType'] = 'other';
+        vnp_Params['vnp_Amount'] = amount * 100;
+        vnp_Params['vnp_ReturnUrl'] = returnUrl;
+        vnp_Params['vnp_IpAddr'] = ipAddr;
+        vnp_Params['vnp_CreateDate'] = createDate;
+        
+        if(bankCode !== null && bankCode !== ''){
+            vnp_Params['vnp_BankCode'] = bankCode;
+        }
+
+        vnp_Params = sortObject(vnp_Params);
+
+        const signData = qs.stringify(vnp_Params, { encode: false });
+        const hmac = crypto.createHmac("sha512", secretKey);
+        const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
+        
+        vnp_Params['vnp_SecureHash'] = signed;
+        const paymentUrl = vnpUrl + '?' + qs.stringify(vnp_Params, { encode: false });
+
+        console.log("✅ VNPay payment URL created:", orderId);
+        return res.json({ url: paymentUrl });
+        
+    } catch (error) {
+        console.error("❌ VNPay create error:", error);
+        return res.status(500).json({ error: 'Server error' });
+    }
 });
 
-app.post("/create-vnpay", (req, res) => {
-    const tmnCode = process.env.VNP_TMNCODE;
-    const secretKey = process.env.VNP_HASH_SECRET;
-    const vnpUrl = process.env.VNP_URL;
-    const returnUrl = process.env.VNP_RETURN_URL;
+// 2️⃣ API: Nhận kết quả trả về từ VNPay (vnpay_return)
+app.get('/vnpay_return', function (req, res) {
+    try {
+        let vnp_Params = req.query;
+        const secureHash = vnp_Params['vnp_SecureHash'];
 
-    console.log("ENV VNPay:", tmnCode ? '***' : tmnCode, secretKey ? '***' : secretKey, vnpUrl, returnUrl);
+        delete vnp_Params['vnp_SecureHash'];
+        delete vnp_Params['vnp_SecureHashType'];
 
-    // Validate env
-    if (!tmnCode || !secretKey || !vnpUrl || !returnUrl) {
-      console.error('VNPay configuration missing. Check VNP_TMNCODE, VNP_HASH_SECRET, VNP_URL, VNP_RETURN_URL');
-      return res.status(500).json({ error: 'VNPay configuration missing on server' });
+        vnp_Params = sortObject(vnp_Params);
+
+        const secretKey = process.env.VNP_HASH_SECRET;
+        const signData = qs.stringify(vnp_Params, { encode: false });
+        const hmac = crypto.createHmac("sha512", secretKey);
+        const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
+
+        if(secureHash === signed){
+            const responseCode = vnp_Params['vnp_ResponseCode'];
+            const orderId = vnp_Params['vnp_TxnRef'];
+            const amount = vnp_Params['vnp_Amount'] / 100;
+            
+            console.log("✅ VNPay return verified:", orderId, responseCode);
+            
+            // Redirect về frontend với kết quả
+            return res.redirect(`${process.env.VNP_RETURN_URL}?code=${responseCode}&orderId=${orderId}&amount=${amount}`);
+        } else{
+            console.log("❌ VNPay checksum failed");
+            return res.redirect(`${process.env.VNP_RETURN_URL}?code=97`);
+        }
+    } catch (error) {
+        console.error("❌ VNPay return error:", error);
+        return res.redirect(`${process.env.VNP_RETURN_URL}?code=99`);
     }
+});
 
-    // Validate request body
-    if (!req.body || typeof req.body.amount === 'undefined') {
-      return res.status(400).json({ error: 'Missing amount in request body. Send JSON {"amount": <VND number>} via POST.' });
+// 3️⃣ API: IPN (Instant Payment Notification) từ VNPay
+app.get('/vnpay_ipn', function (req, res) {
+    try {
+        let vnp_Params = req.query;
+        const secureHash = vnp_Params['vnp_SecureHash'];
+        
+        const orderId = vnp_Params['vnp_TxnRef'];
+        const rspCode = vnp_Params['vnp_ResponseCode'];
+
+        delete vnp_Params['vnp_SecureHash'];
+        delete vnp_Params['vnp_SecureHashType'];
+
+        vnp_Params = sortObject(vnp_Params);
+        
+        const secretKey = process.env.VNP_HASH_SECRET;
+        const signData = qs.stringify(vnp_Params, { encode: false });
+        const hmac = crypto.createHmac("sha512", secretKey);
+        const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
+        
+        const checkOrderId = true; // TODO: Kiểm tra orderId có tồn tại trong DB
+        const checkAmount = true;  // TODO: Kiểm tra amount khớp với DB
+        const paymentStatus = '0';  // TODO: Lấy trạng thái từ DB
+        
+        if(secureHash === signed){
+            if(checkOrderId){
+                if(checkAmount){
+                    if(paymentStatus == "0"){
+                        if(rspCode == "00"){
+                            // TODO: Cập nhật trạng thái thanh toán thành công vào DB
+                            console.log("✅ VNPay IPN: Payment success", orderId);
+                            res.status(200).json({RspCode: '00', Message: 'Success'});
+                        }
+                        else {
+                            // TODO: Cập nhật trạng thái thanh toán thất bại vào DB
+                            console.log("❌ VNPay IPN: Payment failed", orderId, rspCode);
+                            res.status(200).json({RspCode: '00', Message: 'Success'});
+                        }
+                    }
+                    else{
+                        res.status(200).json({RspCode: '02', Message: 'This order has been updated to the payment status'});
+                    }
+                }
+                else{
+                    res.status(200).json({RspCode: '04', Message: 'Amount invalid'});
+                }
+            }       
+            else {
+                res.status(200).json({RspCode: '01', Message: 'Order not found'});
+            }
+        }
+        else {
+            res.status(200).json({RspCode: '97', Message: 'Checksum failed'});
+        }
+    } catch (error) {
+        console.error("❌ VNPay IPN error:", error);
+        res.status(200).json({RspCode: '99', Message: 'Unknown error'});
     }
-
-    // Parse amount safely and reject non-numeric values early
-    const rawAmount = req.body.amount;
-    const amountNum = Number(rawAmount);
-    if (!Number.isFinite(amountNum) || amountNum <= 0) {
-      console.error('Invalid amount received for VNPay:', rawAmount);
-      return res.status(400).json({ error: 'Invalid amount value' });
-    }
-
-    const ipAddr = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    const date = new Date();
-    const createDate = date.toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
-    const orderId = date.getTime();
-
-    // VNPay expects amount in smallest currency unit (amount * 100)
-    const vnpAmount = Math.round(amountNum) * 100;
-
-    let vnp_Params = {
-        vnp_Version: "2.1.0",
-        vnp_Command: "pay",
-        vnp_TmnCode: tmnCode,
-        vnp_Locale: "vn",
-        vnp_CurrCode: "VND",
-        vnp_TxnRef: orderId,
-        vnp_OrderInfo: `Thanh toan don hang ${orderId}`,
-        vnp_OrderType: "other",
-        vnp_Amount: vnpAmount,
-        vnp_ReturnUrl: returnUrl,
-        vnp_IpAddr: ipAddr,
-        vnp_CreateDate: createDate
-    };
-
-    vnp_Params = sortObject(vnp_Params);
-
-    const signData = qs.stringify(vnp_Params, { encode: false });
-    const hmac = crypto.createHmac("sha512", secretKey);
-    const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-
-    vnp_Params["vnp_SecureHash"] = signed;
-    const paymentUrl = vnpUrl + "?" + qs.stringify(vnp_Params, { encode: false });
-
-    return res.json({ url: paymentUrl });
 });
 
 /* ------------------- ZaloPay ------------------- */
