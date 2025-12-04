@@ -1,0 +1,80 @@
+.admin-order {
+  flex: 1;
+  padding: 40px;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+  color: #333;
+}
+
+/* Tiêu đề */
+.admin-order h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #222;
+}
+
+/* Header của bảng */
+.adminorder-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr 2fr 0.5fr;
+  align-items: center;
+  gap: 15px;
+  font-weight: 600;
+  color: #555;
+  padding: 12px 0;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+/* Dòng dữ liệu */
+.adminorder-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 1fr 2fr 0.5fr;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 0;
+  border-bottom: 1px solid #ddd;
+  transition: background 0.2s ease;
+}
+
+.adminorder-row:hover {
+  background: #f0f0f0;
+}
+
+/* Các sản phẩm trong đơn */
+.adminorder-products {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adminorder-product-item {
+  background: #eef2ff;
+  color: #333;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+/* Nút xoá */
+.adminorder-remove-icon {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.adminorder-remove-icon:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+/* Thông báo trống */
+.empty-text {
+  text-align: center;
+  margin-top: 50px;
+  color: #777;
+  font-size: 16px;
+  font-style: italic;
+}

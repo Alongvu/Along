@@ -1,0 +1,195 @@
+/* src/Components/Navbar/Navbar.css */
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 60px;
+    box-shadow: 0 1px 3px -2px #000;
+    background: white;
+    /* Thêm position fixed để navbar luôn ở trên cùng */
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* icon logo */
+.nav-logo {
+    width: 200px;
+    object-fit: contain;
+    /* Xóa margin-right cứng nhắc */
+    cursor: pointer;
+}
+
+/* icon logo ben phai */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* icon search */
+.search_icon {
+    width: 22px;
+    object-fit: contain;
+    cursor: pointer;
+    /* Xóa margin-right cứng nhắc */
+}
+
+/* icon profile */
+.nav-profile {
+    width: 30px; /* Tăng kích thước một chút */
+    height: 30px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 50%; /* Làm tròn ảnh profile */
+}
+
+/* ✅ Search box khi bấm vào search icon */
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f1f1f1;
+    padding: 6px 15px;
+    border-radius: 20px; /* Bo tròn hơn */
+    margin-right: 10px;
+    animation: fadeIn 0.2s ease;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+}
+
+/* Style cho nút Login/Logout */
+.nav-login-btn {
+    padding: 8px 20px;
+    background-color: #ff4141; /* Màu chủ đạo của Shopper */
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none; /* Cho thẻ Link */
+    transition: background-color 0.3s ease;
+    white-space: nowrap; /* Ngăn xuống dòng */
+}
+
+.nav-login-btn:hover {
+    background-color: #d63636;
+}
+
+button.nav-login-btn {
+    /* Reset style mặc định của button nếu cần */
+    font-family: inherit;
+}
+
+/* animation hiển thị search box */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+/* Navbar.css */
+
+/* --- BẠN CÓ THỂ XÓA CÁC ĐOẠN NÀY --- */
+/*
+.nav-user-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-user-email {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+*/
+
+/* --- GIỮ NGUYÊN CÁC ĐOẠN SAU --- */
+.profile-wrapper {
+    position: relative;
+    cursor: pointer;
+    /* Thêm flex để căn chỉnh tốt hơn nếu cần */
+    display: flex;
+    align-items: center; 
+}
+
+/* Dropdown menu */
+.user-dropdown-menu {
+    position: absolute;
+    top: 120%; /* Đẩy xuống một chút để không dính sát vào icon */
+    right: 0;
+    background-color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Shadow mềm hơn */
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 101;
+    min-width: 120px;
+    animation: fadeIn 0.2s ease;
+    border: 1px solid #eee; /* Thêm viền nhẹ */
+}
+
+/* Nút Đăng xuất */
+.logout-btn {
+    width: 100%;
+    padding: 8px 15px;
+    background-color: transparent;
+    color: #ff4141;
+    border: 1px solid #ff4141;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.logout-btn:hover {
+    background-color: #ff4141;
+    color: white;
+}
+
+/* Mobile */
+@media (max-width: 800px) {
+    /* XÓA đoạn ẩn email vì không còn email nữa */
+    /* .nav-user-email { display: none; } */
+    
+    /* ... các style khác giữ nguyên ... */
+}
+/* MOBILE */
+@media (max-width: 800px) {
+    .navbar {
+        padding: 15px 20px;
+    }
+
+    .nav-logo {
+        width: 140px;
+    }
+
+    .nav-login-btn {
+        padding: 6px 15px;
+        font-size: 14px;
+    }
+    
+    .nav-right {
+        gap: 15px;
+    }
+
+    .search-box {
+        padding: 5px 10px;
+        margin-right: 5px;
+    }
+    
+    .search-box input {
+        width: 100px; /* Giới hạn chiều rộng trên mobile */
+    }
+}

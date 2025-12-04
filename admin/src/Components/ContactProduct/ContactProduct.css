@@ -1,0 +1,82 @@
+.admin-contact-container {
+  padding: 40px;
+  font-family: "Poppins", sans-serif;
+  background-color: #f8f9fc;
+  min-height: 100vh;
+}
+
+.admin-contact-title {
+  text-align: center;
+  font-size: 28px;
+  color: #222;
+  margin-bottom: 30px;
+  font-weight: 600;
+}
+
+.loading,
+.no-data {
+  text-align: center;
+  font-size: 18px;
+  color: #777;
+}
+
+.contact-table {
+  width: 110%;
+  margin: 0 auto;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  table-layout: auto;
+}
+.complete-btn{
+  cursor: pointer;
+}
+.delete-btn{
+  cursor: pointer;
+}
+.contact-table th,
+.contact-table td {
+  padding: 16px;
+  text-align: left;
+}
+
+.contact-table thead {
+  background-color: #f1f1f1;
+}
+
+.contact-table th {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+  height: 500;
+}
+
+.contact-table tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background 0.3s;
+}
+
+.contact-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.contact-table td {
+  font-size: 15px;
+  color: #555;
+  vertical-align: top;
+}
+
+
+@media (max-width: 768px) {
+  .contact-table {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .contact-table th,
+  .contact-table td {
+    padding: 12px;
+  }
+}

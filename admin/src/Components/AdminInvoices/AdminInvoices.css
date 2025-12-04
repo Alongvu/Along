@@ -1,0 +1,226 @@
+/* ===== AdminInvoices.css ===== */
+
+.invoice-container {
+  padding: 30px;
+  background: #f9fafc;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+}
+
+.invoice-container h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 28px;
+  color: #333;
+  letter-spacing: 1px;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.invoice-table th,
+.invoice-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.invoice-table th {
+  background: #fff;
+  color: black;
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.invoice-table tr:hover {
+  background: #f5f7fa;
+  transition: 0.3s;
+}
+
+.view-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #3498db;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.view-btn:hover {
+  background: #2980b9;
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px 35px;
+  width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-content h3 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.invoice-header p {
+  margin: 5px 0;
+  color: #333;
+  font-size: 15px;
+  
+}
+
+.invoice-detail-table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  background: #fafafa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.invoice-detail-table th,
+.invoice-detail-table td {
+  border-bottom: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.invoice-detail-table th {
+  background: #34495e;
+  color: #fff;
+}
+
+.invoice-total {
+  margin-top: 20px;
+  text-align: right;
+  font-size: 18px;
+  color: #2c3e50;
+  font-weight: bold;
+}
+.invoice-total{
+  font-weight: 550;
+}
+.invoice-total strong{
+  font-weight: 700;
+}
+
+.close-btn {
+  display: block;
+  margin: 25px auto 0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #e74c3c;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.close-btn:hover {
+  background: #c0392b;
+}
+
+/* ===== Nút in ===== */
+.print-btn {
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background 0.3s;
+}
+
+.print-btn:hover {
+  background: #1e8449;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+  .invoice-table th,
+  .invoice-table td {
+    font-size: 13px;
+  }
+}
+.invoice-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 25px;
+}
+
+/* Nút chung */
+.invoice-actions button {
+  min-width: 120px;
+  height: 40px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #fff;
+}
+
+/* Nút in hóa đơn */
+.print-btn {
+  background-color: #28a745;
+}
+
+.print-btn:hover {
+  background-color: #218838;
+}
+
+/* Nút đóng */
+.close-btn {
+  background-color: #ff4d4f;
+}
+
+.close-btn:hover {
+  background-color: #e04344;
+}
